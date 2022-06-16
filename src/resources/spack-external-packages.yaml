@@ -1,0 +1,28 @@
+packages:
+    intel-mpi:
+        externals:
+        - spec: intel-mpi@2020.2.254
+          prefix: /opt/intel/compilers_and_libraries_2020.2.254/linux/mpi/intel64
+        buildable: False
+    libfabric:
+        variants: fabrics=efa,tcp,udp,sockets,verbs,shm,mrail,rxd,rxm
+        externals:
+        - spec: libfabric@1.13.2 fabrics=efa,tcp,udp,sockets,verbs,shm,mrail,rxd,rxm
+          prefix: /opt/amazon/efa
+        buildable: False
+    openmpi:
+        variants: fabrics=auto +pmix +legacylaunchers schedulers=slurm
+        externals:
+        - spec: openmpi@4.1.1 fabrics=auto +pmix +legacylaunchers schedulers=slurm
+          prefix: /opt/amazon/openmpi
+    pmix:
+        externals:
+          - spec: pmix@3.2.3 ~pmi_backwards_compatibility
+            prefix: /opt/pmix
+    slurm:
+        variants: +pmix sysconfdir=/opt/slurm/etc
+        externals:
+        - spec: slurm@21.08.5 +pmix sysconfdir=/opt/slurm/etc
+          prefix: /opt/slurm
+        buildable: False
+

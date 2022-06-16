@@ -1,0 +1,86 @@
+---
+# Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+name: ufs-spack-component
+description: Installs Spack, Intel OneAPI, Intel MPI, and UFS.
+schemaVersion: 1.0
+
+parameters:
+  - SpackRelease:
+      type: string
+      default: 'develop'
+      description: The version of Spack to install (Github tag/branch)
+
+phases:
+  - name: build
+    steps:
+      - name: DependenciesStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              yum -y install git
+
+      - name: InstallSpackPackageStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              cd /opt
+              git clone -b {{ SpackRelease }} -c feature.manyFiles=true https://github.com/spack/spack.git
+              echo 'test -f /opt/spack/share/spack/setup-env.sh && . $_' > /etc/profile.d/spack.sh
+              chmod 644 /etc/profile.d/spack.sh
+
+      - name: ExternalPackages
+        action: S3Download
+        inputs:
+          - source: s3://aws-weather-bucket/templates/spack-external-packages.yaml
+            destination: /opt/spack/etc/spack/packages.yaml
+            overwrite: true
+
+      - name: InstallOneAPI
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              source /etc/profile.d/spack.sh
+              spack install intel-oneapi-compilers@2022.0.2
+              spack load intel-oneapi-compilers
+              spack compiler find
+              spack unload
+              spack install intel-oneapi-mpi+external-libfabric%intel
+
+      - name: InstallSpackCache
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              source /etc/profile.d/spack.sh
+              pip3 -qqq install botocore==1.23.46 boto3==1.20.46
+              spack mirror add aws-spack-cache s3://aws-spack-cache/
+              spack buildcache keys --install --trust --force
+
+      - name: InstallUFS
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              source /etc/profile.d/spack.sh
+              spack install --reuse ufs-weather-model%intel^intel-oneapi-mpi+external-libfabric
+              spack install --reuse ufs-utils%intel^intel-oneapi-mpi+external-libfabric
+              spack install --reuse upp%intel^intel-oneapi-mpi+external-libfabric
+

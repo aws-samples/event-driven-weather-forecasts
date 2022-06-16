@@ -1,0 +1,11 @@
+Build:
+  InstanceType: c5a.2xlarge
+  ParentImage: arn:aws:imagebuilder:us-east-2:aws:image/amazon-linux-2-x86/x.x.x
+  Iam:
+    AdditionalIamPolicies:
+      - Policy: arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+  Components:
+    - Type: arn
+      Value: arn:aws:imagebuilder:us-east-2:905784713722:component/ufs-spack/1.0.4/1
+  UpdateOsPackages:
+    Enabled: true

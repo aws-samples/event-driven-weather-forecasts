@@ -1,0 +1,63 @@
+Region: {REGION: ''}
+Image:
+  Os: alinux2
+  CustomAmi: ami-0ae35db9d39bbf647
+Tags:
+  - Key: Purpose
+    Value: Event Driven Weather Forecast
+HeadNode:
+  InstanceType: hpc6a.48xlarge
+  Networking:
+    SubnetId: {SUBNET: ''}
+    AdditionalSecurityGroups: !!seq
+      - {SLURM: ''}
+  Iam:
+    AdditionalIamPolicies:
+      - Policy: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      - Policy: arn:aws:iam::aws:policy/AmazonS3FullAccess
+      - Policy: arn:aws:iam::aws:policy/AmazonFSxFullAccess
+      - Policy: arn:aws:iam::aws:policy/SecretsManagerReadWrite
+      - Policy: arn:aws:iam::aws:policy/AmazonSNSFullAccess
+  Ssh:
+    KeyName: tpbrown
+  LocalStorage:
+    RootVolume:
+      Size: 50
+  CustomActions:
+    OnNodeConfigured:
+      Script: {S3_URL_POST_INSTALL_HEADNODE: ''}
+      Args: !!seq
+        - {REGION: ''}
+        - {SNS: ''}
+        - {FTIME: ''}
+        - {JWT: ''}
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+    - Name: general
+      ComputeResources:
+        - Name: hpc6a
+          InstanceType: hpc6a.48xlarge
+          MinCount: 0
+          MaxCount: 100
+          Efa:
+            Enabled: true
+      Networking:
+        SubnetIds: !!seq
+          - {SUBNET: ''}
+        PlacementGroup:
+          Enabled: true
+      Iam:
+        S3Access:
+          - BucketName: aws-weather-bucket
+            EnableWriteAccess: true
+SharedStorage:
+  - Name: FsxLustre
+    StorageType: FsxLustre
+    MountDir: /fsx
+    FsxLustreSettings:
+      StorageCapacity: 4800
+      DeploymentType: PERSISTENT_1
+      PerUnitStorageThroughput: 200
+      DataCompressionType: LZ4
+      ImportPath: s3://aws-weather-bucket
