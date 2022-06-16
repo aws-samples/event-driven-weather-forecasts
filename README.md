@@ -1,4 +1,4 @@
-# Event Driven Forecasts
+# Event Driven Weather Forecasts
 
 ![Overview image](./event_driven_weather_forecast.png)
 
