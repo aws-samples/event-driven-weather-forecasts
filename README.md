@@ -30,7 +30,10 @@ Install the AWS CDK application and the python library.
 
 ```
 npm install -g aws-cdk
-python -m pip install aws-cdk-lib
+cd src/
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Deploying
@@ -38,7 +41,6 @@ python -m pip install aws-cdk-lib
 The following commands will deploy the CDK stack.
 
 ```
-cd src/
 cdk bootstrap
 cdk deploy
 ```
