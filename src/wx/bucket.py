@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_iam as iam,
     aws_lambda as λ,
     aws_lambda_event_sources as λ_events,
+    aws_logs as logs,
     aws_s3 as s3,
     aws_s3_assets as assets,
     aws_s3_notifications,
@@ -55,10 +56,6 @@ class S3Stack(NestedStack):
                 resources=["*"],
                 effect=iam.Effect.ALLOW),
             iam.PolicyStatement(
-                actions=["cloudformation:DescribeStacks"],
-                resources=["*"],
-                effect=iam.Effect.ALLOW),
-            iam.PolicyStatement(
                 actions=["iam:*"],
                 resources=["*"],
                 effect=iam.Effect.ALLOW),
@@ -88,40 +85,18 @@ class S3Stack(NestedStack):
                                       description="WX Lambda Layer",
                                     )
 
-        create = λ.Function(self, "lambda_func_create",
-                runtime=λ.Runtime.PYTHON_3_9,
-                handler="cluster.create",
-                code=λ.Code.from_asset("./lambda"),
-                layers=[layer],
-                role=lambda_role,
-                environment={
-                    "CLUSTER_NAME": cluster_name,
-                    "JWTKEY": jwt_key,
-                    "PCLUSTER_API_URL": purl,
-                    "REGION": Aws.REGION,
-                    "S3_URL_POST_INSTALL_HEADNODE": f"{post_head.s3_object_url}",
-                    "SG": sg_rds.security_group_id,
-                    "SNS_TOPIC": sns_topic,
-                    "STACK_NAME": NestedStack.of(self).stack_name,
-                    "SUBNETID": subnet,
-                },
-                timeout=Duration.seconds(60)
-            )
-        Tags.of(create).add("Purpose", "Event Driven Weather Forecast", priority=300)
-        gfs = sns.Topic.from_topic_arn(self, "NOAAGFS", "arn:aws:sns:us-east-1:123901341784:NewGFSObject")
-        create.add_event_source(λ_events.SnsEventSource(gfs))
-
         destroy = λ.Function(self, "lambda_func_destroy",
-                runtime=λ.Runtime.PYTHON_3_9,
-                handler="cluster.destroy",
                 code=λ.Code.from_asset("./lambda"),
-                layers=[layer],
-                role=lambda_role,
                 environment={
                     "CLUSTER_NAME": cluster_name,
                     "PCLUSTER_API_URL": purl,
                     "REGION": Aws.REGION,
                 },
+                handler="cluster.destroy",
+                layers=[layer],
+                log_retention=logs.RetentionDays.ONE_DAY,
+                role=lambda_role,
+                runtime=λ.Runtime.PYTHON_3_9,
                 timeout=Duration.seconds(60)
             )
         Tags.of(destroy).add("Purpose", "Event Driven Weather Forecast", priority=300)
@@ -154,6 +129,30 @@ class S3Stack(NestedStack):
             timeout=Duration.minutes(65))
 
         Tags.of(sm).add("Purpose", "Event Driven Weather Forecast", priority=300)
+
+        create = λ.Function(self, "lambda_func_create",
+                code=λ.Code.from_asset("./lambda"),
+                environment={
+                    "CLUSTER_NAME": cluster_name,
+                    "JWTKEY": jwt_key,
+                    "PCLUSTER_API_URL": purl,
+                    "REGION": Aws.REGION,
+                    "S3_URL_POST_INSTALL_HEADNODE": f"{post_head.s3_object_url}",
+                    "SG": sg_rds.security_group_id,
+                    "SNS_TOPIC": sns_topic,
+                    "SM_ARN": sm.state_machine_arn,
+                    "SUBNETID": subnet,
+                },
+                handler="cluster.create",
+                layers=[layer],
+                log_retention=logs.RetentionDays.ONE_DAY,
+                role=lambda_role,
+                runtime=λ.Runtime.PYTHON_3_9,
+                timeout=Duration.seconds(60)
+            )
+        Tags.of(create).add("Purpose", "Event Driven Weather Forecast", priority=300)
+        gfs = sns.Topic.from_topic_arn(self, "NOAAGFS", "arn:aws:sns:us-east-1:123901341784:NewGFSObject")
+        create.add_event_source(λ_events.SnsEventSource(gfs))
 
         CfnOutput(self, "S3 Bucket", value=self.bucket.bucket_name)
         CfnOutput(self, "StateMachineArn", value=sm.state_machine_arn,

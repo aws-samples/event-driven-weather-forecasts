@@ -42,12 +42,12 @@ def destroy(event, context):
 
     c = boto3.client("iam")
     roles = c.list_roles()
-    for role in roles['Roles']:
-        n = role['RoleName']
+    for role in roles["Roles"]:
+        n = role["RoleName"]
         if n.startswith(f"{cluster_name}-Role") and not n.startswith(f"{cluster_name}-RoleHeadNode"):
             policies = c.list_attached_role_policies(RoleName=n)
-            for policy in policies['AttachedPolicies']:
-                c.detach_role_policy(RoleName=n, PolicyArn=policy['PolicyArn'])
+            for policy in policies["AttachedPolicies"]:
+                c.detach_role_policy(RoleName=n, PolicyArn=policy["PolicyArn"])
 
     params = {"region": region}
     data = json.dumps({"clusterName": cluster_name})
@@ -58,8 +58,7 @@ def destroy(event, context):
 def create(event, context):
 
     msg = json.loads(event["Records"][0]["Sns"]["Message"])
-    key = msg['Records'][0]['s3']['object']['key']
-    print(f"Key: {key}")
+    key = msg["Records"][0]["s3"]["object"]["key"]
     p = re.compile(r"""
                  gfs.                      # GFS prefix
                  (?P<y>\d{4})              # Year
@@ -75,31 +74,25 @@ def create(event, context):
         return
 
     ftime = f"{m.group('y')}-{m.group('m')}-{m.group('d')}T{m.group('h')}:00:00Z"
-    stack_name = os.getenv("STACK_NAME")
-    sm_arn = ""
-    outputs = boto3.Session().client("cloudformation").describe_stacks(StackName=stack_name)["Stacks"][0]["Outputs"]
-    for o in outputs:
-      if o["OutputKey"] == "StateMachineArn":
-        sm_arn = o["OutputValue"]
-        break
+
     sfn = boto3.client('stepfunctions')
     sfn.start_execution(
-        stateMachineArn=sm_arn
+        stateMachineArn=os.getenv("SM_ARN")
     )
 
     with open("hpc6a.yaml", "r") as cf:
         config_data = yaml.safe_load(cf)
 
-    config_data['Region'] = region
-    config_data['HeadNode']['Networking']['SubnetId'] = os.getenv('SUBNETID')
-    config_data['HeadNode']['Networking']['AdditionalSecurityGroups'][0] = os.getenv('SG')
-    config_data['Scheduling']['SlurmQueues'][0]['Networking']['SubnetIds'][0] = os.getenv('SUBNETID')
+    config_data["Region"] = region
+    config_data["HeadNode"]["Networking"]["SubnetId"] = os.getenv("SUBNETID")
+    config_data["HeadNode"]["Networking"]["AdditionalSecurityGroups"][0] = os.getenv("SG")
+    config_data["Scheduling"]["SlurmQueues"][0]["Networking"]["SubnetIds"][0] = os.getenv("SUBNETID")
 
-    config_data['HeadNode']['CustomActions']['OnNodeConfigured']['Script'] = os.getenv('S3_URL_POST_INSTALL_HEADNODE')
-    config_data['HeadNode']['CustomActions']['OnNodeConfigured']['Args'][0] = region
-    config_data['HeadNode']['CustomActions']['OnNodeConfigured']['Args'][1] = os.getenv('SNS_TOPIC')
-    config_data['HeadNode']['CustomActions']['OnNodeConfigured']['Args'][2] = ftime
-    config_data['HeadNode']['CustomActions']['OnNodeConfigured']['Args'][3] = os.getenv("JWTKEY")
+    config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Script"] = os.getenv("S3_URL_POST_INSTALL_HEADNODE")
+    config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][0] = region
+    config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][1] = os.getenv("SNS_TOPIC")
+    config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][2] = ftime
+    config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][3] = os.getenv("JWTKEY")
 
     method = "POST"
     data = json.dumps({"clusterConfiguration": yaml.dump(config_data, default_flow_style=False),
