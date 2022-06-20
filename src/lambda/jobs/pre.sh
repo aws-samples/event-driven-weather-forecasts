@@ -23,8 +23,8 @@ sed -r -e "s/(start_hour:).*/\1 ${h}/;
 	model_configure.in > model_configure
 
 for i in {0..6} ; do
-  j=$(($h + $i))
-  sed -i "5 s/.*/  DateStr='${y}-${m}-${d}_0${j}:00:00'/" /fsx/run/00${i}/itag
+  j=$(printf "%02d" $(($h + $i)))
+  sed -i "5 s/.*/  DateStr='${y}-${m}-${d}_${j}:00:00'/" /fsx/run/00${i}/itag
 done
 
 export FI_PROVIDER=efa
