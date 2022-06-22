@@ -38,7 +38,14 @@ pip install -r requirements.txt
 
 ## Deploying
 
-The following commands will deploy the CDK stack.
+Create a lambda layer that contains `requests` and `pyyaml`.
+```
+mkdir layer && cd $_
+pip install requests pyyaml -t python/
+zip -r ../layer.zip python
+```
+
+Then deploy the CDK stack.
 
 ```
 cdk bootstrap
