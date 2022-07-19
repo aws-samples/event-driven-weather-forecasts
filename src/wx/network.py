@@ -7,11 +7,10 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-class VpcStack(NestedStack):
+class Vpc(NestedStack):
 
-    def __init__(self, scope: Construct, construct_id: str, props: None, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-        env_name = self.node.try_get_context("env")
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id)
 
         vpc = ec2.Vpc(self, 'wx-vpc',
             cidr = '10.0.0.0/18',
@@ -31,20 +30,6 @@ class VpcStack(NestedStack):
                     subnet_type = ec2.SubnetType.PRIVATE_WITH_NAT
                 ),
             ],
-        )
-
-        fsx_security_group = ec2.SecurityGroup(
-            self,
-            "FsxSg",
-            vpc=vpc,
-            allow_all_outbound=True,
-            security_group_name="fsx-lustre-sg",
-        )
-
-        fsx_security_group.add_ingress_rule(
-            peer=ec2.Peer.ipv4(vpc.vpc_cidr_block),
-            connection=ec2.Port.tcp(988),
-            description="FSx Lustre",
         )
 
         CfnOutput(self, "vpcid", value=vpc.vpc_id)

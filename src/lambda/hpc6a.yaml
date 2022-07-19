@@ -31,6 +31,7 @@ HeadNode:
         - {SNS: ''}
         - {FTIME: ''}
         - {JWT: ''}
+        - {TMPL: ''}
 Scheduling:
   Scheduler: slurm
   SlurmQueues:
@@ -49,7 +50,7 @@ Scheduling:
           Enabled: true
       Iam:
         S3Access:
-          - BucketName: aws-weather-bucket
+          - BucketName: {BUCKET_NAME: ''}
             EnableWriteAccess: true
 SharedStorage:
   - Name: FsxLustre
@@ -60,4 +61,3 @@ SharedStorage:
       DeploymentType: PERSISTENT_1
       PerUnitStorageThroughput: 200
       DataCompressionType: LZ4
-      ImportPath: s3://aws-weather-bucket

@@ -73,6 +73,7 @@ def create(event, context):
     if not m:
         return
 
+    print(key)
     ftime = f"{m.group('y')}-{m.group('m')}-{m.group('d')}T{m.group('h')}:00:00Z"
 
     sfn = boto3.client('stepfunctions')
@@ -87,16 +88,18 @@ def create(event, context):
     config_data["HeadNode"]["Networking"]["SubnetId"] = os.getenv("SUBNETID")
     config_data["HeadNode"]["Networking"]["AdditionalSecurityGroups"][0] = os.getenv("SG")
     config_data["Scheduling"]["SlurmQueues"][0]["Networking"]["SubnetIds"][0] = os.getenv("SUBNETID")
+    config_data["Scheduling"]["SlurmQueues"][0]["Iam"]["S3Access"][0]["BucketName"] = os.getenv("BUCKET_NAME")
 
     config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Script"] = os.getenv("S3_URL_POST_INSTALL_HEADNODE")
     config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][0] = region
     config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][1] = os.getenv("SNS_TOPIC")
     config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][2] = ftime
     config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][3] = os.getenv("JWTKEY")
+    config_data["HeadNode"]["CustomActions"]["OnNodeConfigured"]["Args"][4] = os.getenv("FORECAST_TMPL")
 
     method = "POST"
     data = json.dumps({"clusterConfiguration": yaml.dump(config_data, default_flow_style=False),
         "clusterName": cluster_name})
     print(data)
-    print(gateway(path, method, data))
+    print(gateway(url, method, data))
 

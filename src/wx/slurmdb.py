@@ -11,10 +11,11 @@ from aws_cdk import (
 
 from constructs import Construct
 
-class SlurmDbStack(NestedStack):
-    def __init__(self, scope:Construct, construct_id: str, vpc, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+class SlurmDb(NestedStack):
+    def __init__(self, scope:Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id)
 
+        vpc = kwargs["vpc"]
         sg_rds = ec2.SecurityGroup(
                 self,
                 id="sg_rds",

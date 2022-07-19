@@ -24,5 +24,3 @@ m=${ftime:5:2}
 d=${ftime:8:2}
 h=${ftime:11:2}
 grib=$(ls -1 GFSPRS*)
-aws s3 cp ${grib} s3://aws-weather-bucket/outputs/${y}/${m}/${d}/${h}/${grib}
-aws s3 cp slurm-${SLURM_JOB_ID}.out s3://aws-weather-bucket/run/

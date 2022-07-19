@@ -45,11 +45,19 @@ pip install requests pyyaml -t python/
 zip -r ../layer.zip python
 ```
 
+Download the fix/static files from NOAA. Note, this will take awhile as it
+will download ~ 2 Gigabytes.
+```
+cd resources
+./get_fix.sh
+cd ..
+```
+
 Then deploy the CDK stack.
 
 ```
 cdk bootstrap
-cdk deploy
+cdk deploy --parameters BucketName=aws-weather-bucket
 ```
 
 ## Cleanup

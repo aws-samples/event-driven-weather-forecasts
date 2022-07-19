@@ -11,6 +11,8 @@ import requests
 
 region = os.getenv("AWS_REGION")
 ip = "127.0.0.1"
+bucket = os.getenv("BUCKET_NAME")
+output = f"s3://{bucket}/outputs/${{y}}/${{m}}/${{d}}/${{h}}/"
 template = {
     "job": {
         "name":"",
@@ -60,6 +62,7 @@ def status(jobid, headers):
 def pre():
     with open("jobs/pre.sh", "r") as f:
         script = f.read()
+    script += f"\naws s3 cp slurm-${{SLURM_JOB_ID}}.out {output}/logs/slurm-${{SLURM_JOB_ID}}.out\n"
     template["job"]["name"] = "pre"
     template["job"]["nodes"] = 20
     template["script"] = script
@@ -69,6 +72,7 @@ def pre():
 def run(pid):
     with open("jobs/run.sh", "r") as f:
         script = f.read()
+    script += f"\naws s3 cp slurm-${{SLURM_JOB_ID}}.out {output}/logs/slurm-${{SLURM_JOB_ID}}.out\n"
     template["job"]["name"] = "ufs"
     template["job"]["nodes"] = 20
     template["job"]["dependency"] = f"afterok:{pid}"
@@ -79,12 +83,14 @@ def run(pid):
 def post(pid):
     with open("jobs/post.sh", "r") as f:
         script = f.read()
+    script += f"\naws s3 cp --no-progress ${{grib}} {output}/${{grib}}"
+    script += f"\naws s3 cp slurm-${{SLURM_JOB_ID}}.out {output}/logs/slurm-${{SLURM_JOB_ID}}.out\n"
     template["job"]["nodes"] = 1
     jids = []
     for i in range(0, 7):
         template["job"]["name"] = f"post-{i:03}"
         template["job"]["dependency"] = f"afterok:{pid}"
-        template["job"]["current_working_directory"] = f"/fsx/run/{i:03}"
+        template["job"]["current_working_directory"] = f"/fsx/run/post/{i:02}"
         template["script"] = script
         print(template)
         jids.append(submit(template))
@@ -93,6 +99,8 @@ def post(pid):
 def fini(ids):
     with open("jobs/fini.sh", "r") as f:
         script = f.read()
+    script += f"\naws s3 cp forecast.done {output}/forecast.done"
+    script += f"\naws s3 cp slurm-${{SLURM_JOB_ID}}.out {output}/logs/slurm-${{SLURM_JOB_ID}}.out\n"
     template["job"]["nodes"] = 1
     template["job"]["name"] = "fini"
     template["job"]["tasks_per_node"] = 1
