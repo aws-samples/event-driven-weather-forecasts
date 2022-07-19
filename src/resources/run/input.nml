@@ -1,0 +1,224 @@
+&amip_interp_nml
+  data_set='reynolds_oi'
+  date_out_of_range='climo'
+  interp_oi_sst=t
+  no_anom_sst=f
+  use_ncep_sst=t
+/
+&atmos_model_nml
+  blocksize=32
+  ccpp_suite='FV3_GFS_v15p2'
+  fdiag=1.0
+/
+&cires_ugwp_nml
+  knob_ugwp_azdir=2,4,4,4
+  knob_ugwp_dokdis=1
+  knob_ugwp_effac=1,1,1,1
+  knob_ugwp_ndx4lh=1
+  knob_ugwp_solver=2
+  knob_ugwp_source=1,1,0,0
+  knob_ugwp_stoch=0,0,0,0
+  knob_ugwp_wvspec=1,25,25,25
+  launch_level=25
+/
+&coupler_nml
+/
+&diag_manager_nml
+  prepend_date=f
+/
+&external_ic_nml
+  levp=65
+/
+&fms_io_nml
+  checksum_required=f
+  max_files_r=100
+  max_files_w=100
+/
+&fms_nml
+  clock_grain='ROUTINE'
+  domains_stack_size=3000000
+/
+&fv_core_nml
+  a_imp=1.0
+  agrid_vel_rst=t
+  consv_te=1.0
+  d2_bg_k1=0.15
+  d2_bg_k2=0.02
+  d4_bg=0.12
+  d_con=1.0
+  d_ext=0.0
+  dddmp=0.1
+  delt_max=0.002
+  dnats=1
+  do_sat_adj=t
+  do_vort_damp=t
+  external_eta=t
+  external_ic=t
+  fill=t
+  fv_sg_adj=450
+  grid_type=-1
+  hord_dp=-5
+  hord_mt=5
+  hord_tm=5
+  hord_tr=8
+  hord_vt=5
+  hydrostatic=f
+  k_split=2
+  kord_mt=9
+  kord_tm=-9
+  kord_tr=9
+  kord_wz=9
+  layout=6,12
+  mountain=f
+  n_split=6
+  n_sponge=10
+  na_init=0
+  nggps_ic=t
+  nord=2
+  npx=769
+  npy=769
+  npz=64
+  ntiles=6
+  nudge_qv=t
+  nwat=6
+  p_fac=0.1
+  phys_hydrostatic=f
+  print_freq=6
+  res_latlon_dynamics=''
+  rf_cutoff=7.5e2
+  tau=10.0
+  vtdm4=0.02
+  warm_start=f
+  z_tracer=t
+/
+&fv_grid_nml
+  grid_file='INPUT/grid_spec.nc'
+/
+&fv_nwp_nudge_nml
+/
+&gfdl_cloud_microphysics_nml
+  c_cracw=0.8
+  c_paut=0.5
+  c_pgacs=0.01
+  c_psaci=0.05
+  ccn_l=300.
+  ccn_o=100.
+  do_sedi_heat=f
+  dw_land=0.16
+  fast_sat_adj=t
+  fix_negative=t
+  icloud_f=1
+  qi0_crt=8.0e-5
+  ql_mlt=1.0e-3
+  rh_inc=0.30
+  rh_inr=0.30
+  rh_ins=0.30
+  tau_l2v=225.
+  use_ccn=t
+  vg_max=12.0
+  vi_max=1.0
+  vs_max=2.0
+  z_slope_ice=t
+/
+&gfs_physics_nml
+  cdmbgwd=3.5,0.25
+  cnvcld=t
+  cnvgwd=t
+  dspheat=t
+  effr_in=t
+  fhcyc=24.0
+  fhzero=6.0
+  h2o_phys=t
+  hybedmf=t
+  iaer=111
+  ialb=1
+  ico2=2
+  iems=1
+  imfdeepcnv=2
+  imfshalcnv=2
+  imp_physics=11
+  isol=2
+  isot=1
+  isubc_lw=2
+  isubc_sw=2
+  ivegsrc=1
+  lgfdlmprad=t
+  ncld=5
+  nst_anl=t
+  nstf_name=2,0,0,0,0
+  oz_phys=f
+  oz_phys_2015=t
+  prautco=0.00015,0.00015
+  psautco=0.0008,0.0005
+  redrag=t
+  shal_cnv=t
+  trans_trac=t
+  use_ufo=t
+/
+&interpolator_nml
+  interp_method='conserve_great_circle'
+/
+&mpp_io_nml
+/
+&nam_physics_nml
+/
+&nam_sfcperts
+/
+&nam_stochy
+  iseed_shum=2021051911012
+  iseed_skeb=2021051911011
+  iseed_sppt=2021051911013
+  lat_s=768
+  lon_s=1536
+  ntrunc=766
+  shum=0.005
+  shum_lscale=500000.0
+  shum_tau=21600.0
+  skeb=0.3
+  skeb_lscale=500000.0
+  skeb_npass=30
+  skeb_tau=21600.0
+  sppt=0.5
+  sppt_logit=t
+  sppt_lscale=500000.0
+  sppt_sfclimit=t
+  sppt_tau=21600.0
+  use_zmtnblck=t
+/
+&namsfc
+  fabsl=99999
+  faisl=99999
+  faiss=99999
+  fnabsc='./fix/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb'
+  fnaisc='./fix/CFSR.SEAICE.1982.2012.monthly.clim.grb'
+  fnalbc='./fix/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb'
+  fnalbc2='./fix/global_albedo4.1x1.grb'
+  fnglac='./fix/global_glacier.2x2.grb'
+  fnmskh='./fix/global_slmask.t1534.3072.1536.grb'
+  fnmxic='./fix/global_maxice.2x2.grb'
+  fnslpc='./fix/global_slope.1x1.grb'
+  fnsmcc='./fix/global_soilmgldas.statsgo.t1534.3072.1536.grb'
+  fnsnoc='./fix/global_snoclim.1.875.grb'
+  fnsotc='./fix/global_soiltype.statsgo.t1534.3072.1536.rg.grb'
+  fntg3c='./fix/global_tg3clim.2.6x1.5.grb'
+  fntsfc='./fix/RTGSST.1982.2012.monthly.clim.grb'
+  fnvegc='./fix/global_vegfrac.0.144.decpercent.grb'
+  fnvetc='./fix/global_vegtype.igbp.t1534.3072.1536.rg.grb'
+  fnvmnc='./fix/global_shdmin.0.144x0.144.grb'
+  fnvmxc='./fix/global_shdmax.0.144x0.144.grb'
+  fnzorc='igbp'
+  fsicl=99999
+  fslpl=99999
+  fsnol=99999.0
+  fsotl=99999.0
+  ftsfs=90.0
+  fvetl=99999
+  fvmnl=99999
+  fvmxl=99999
+/
+&nest_nml
+/
+&surf_map_nml
+/
+&test_case_nml
+/

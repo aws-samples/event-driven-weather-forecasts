@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Grab GFS Analysis files from NOAA's S3 bucket.
+# The date time format should be ISO 8601 (e.g. YYYY-mm-ddTHH:MMZ).
+
+set -x
+ftime=$(< /fsx/run/ftime)
+y=${ftime:0:4}
+m=${ftime:5:2}
+d=${ftime:8:2}
+h=${ftime:11:2}
+
+aws s3 cp --quiet s3://noaa-gfs-bdp-pds/gfs.${y}${m}${d}/${h}/atmos/gfs.t${h}z.atmanl.nc /fsx/run
+aws s3 cp --quiet s3://noaa-gfs-bdp-pds/gfs.${y}${m}${d}/${h}/atmos/gfs.t${h}z.sfcanl.nc /fsx/run
+

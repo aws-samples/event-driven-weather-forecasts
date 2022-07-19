@@ -11,11 +11,14 @@ main() {
   local region=$1
   local sns=$2
   local ftime=$3
+  local jwt=$4
+  local template=$5
   spack_compilers
-  chown -R ec2-user:ec2-user /fsx/run
+  mkdir -p /fsx/run
   systemd_units
   slurm_db $region
-  fini $region $sns $ftime
+  extract $template
+  fini $region $sns $ftime $jwt
 }
 
 spack_compilers() {
@@ -140,10 +143,20 @@ EOF
   systemctl start slurmrestd.service
 }
 
+extract() {
+  local template=$1
+  cd /fsx/run
+  aws s3 cp $template .
+  unzip ${template##*/}
+  rm ${template##*/}
+  chown -R ec2-user:ec2-user /fsx/run
+}
+
 fini() {
   local region=$1
   local sns=$2
   local ftime=$3
+  local jwt=$4
   local y=${ftime:0:4}
   local m=${ftime:5:2}
   local d=${ftime:8:2}
@@ -160,7 +173,7 @@ fini() {
 	sleep 15
 	aws secretsmanager update-secret \
 	  --region ${region} \
-	  --secret-id "JWTKey" \
+	  --secret-id "$jwt" \
 	  --secret-string \$(/opt/slurm/bin/scontrol token lifespan=7200 | cut -f 2 -d = )
 
 	export ip=$(curl -q -s http://169.254.169.254/latest/meta-data/local-ipv4)

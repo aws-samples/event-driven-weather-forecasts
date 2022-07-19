@@ -14,7 +14,10 @@ m=${ftime:5:2}
 d=${ftime:8:2}
 h=${ftime:11:2}
 sed -r -e "s/atm_files_input_grid=.*/atm_files_input_grid=\'gfs.t${h}z.atmanl.nc\'/;
-	   s/sfc_files_input_grid=.*/sfc_files_input_grid=\'gfs.t${h}z.sfcanl.nc\'/;" \
+	   s/sfc_files_input_grid=.*/sfc_files_input_grid=\'gfs.t${h}z.sfcanl.nc\'/;
+	   s/(cycle_hour=).*/\1 ${h}/;
+	   s/(cycle_day=).*/\1 ${d}/;
+	   s/(cycle_mon=).*/\1 ${m}/;" \
 	fort.41.in > fort.41
 sed -r -e "s/(start_hour:).*/\1 ${h}/;
 	   s/(start_day:).*/\1 ${d}/;
@@ -24,7 +27,7 @@ sed -r -e "s/(start_hour:).*/\1 ${h}/;
 
 for i in {0..6} ; do
   j=$(printf "%02d" $(($h + $i)))
-  sed -i "5 s/.*/  DateStr='${y}-${m}-${d}_${j}:00:00'/" /fsx/run/00${i}/itag
+  sed -i "5 s/.*/  DateStr='${y}-${m}-${d}_${j}:00:00'/" /fsx/run/post/0${i}/itag
 done
 
 export FI_PROVIDER=efa
@@ -45,4 +48,3 @@ for n in {1..6}; do
   ln -fs ../out.sfc.tile$n.nc INPUT/sfc_data.tile$n.nc
 done
 
-aws s3 cp slurm-${SLURM_JOB_ID}.out s3://aws-weather-bucket/run/

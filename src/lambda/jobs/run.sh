@@ -19,4 +19,9 @@ export SLURM_EXPORT_ENV=ALL
 
 time mpiexec.hydra $(which ufs_weather_model)
 
-aws s3 cp slurm-${SLURM_JOB_ID}.out s3://aws-weather-bucket/run/
+ftime=$(< /fsx/run/ftime)
+y=${ftime:0:4}
+m=${ftime:5:2}
+d=${ftime:8:2}
+h=${ftime:11:2}
+

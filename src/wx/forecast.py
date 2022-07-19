@@ -12,10 +12,13 @@ from aws_cdk import (
 from constructs import Construct
 
 
-class ForecastStack(NestedStack):
+class Forecast(NestedStack):
 
-    def __init__(self, scope: Construct, construct_id: str, vpc, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id)
+
+        vpc = kwargs["vpc"]
+        bucket_name = kwargs["bucket"]
 
         self.wx_sns = sns.Topic(self, "ForecastSns", display_name="Forecast SNS Topic")
 
@@ -52,6 +55,9 @@ class ForecastStack(NestedStack):
 
         run = λ.Function(self, "lambda_func_run",
                 code=λ.Code.from_asset("./lambda"),
+                environment={
+                    "BUCKET_NAME": bucket_name,
+                },
                 handler="forecast.main",
                 layers=[layer],
                 role=role,
