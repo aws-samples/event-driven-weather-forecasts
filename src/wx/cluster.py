@@ -74,7 +74,7 @@ class Cluster(NestedStack):
                     iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
                     iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaVPCAccessExecutionRole"),
                     ],
-                inline_policies=[policy_doc],
+                inline_policies={"cluster_lambda": policy_doc},
         )
 
         subnet = vpc.public_subnets[1].subnet_id
