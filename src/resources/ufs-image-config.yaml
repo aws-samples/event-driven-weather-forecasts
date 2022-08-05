@@ -6,6 +6,6 @@ Build:
       - Policy: arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
   Components:
     - Type: arn
-      Value: arn:aws:imagebuilder:us-east-2:905784713722:component/ufs-spack/1.0.4/1
+      Value: arn:aws:imagebuilder:us-east-2:905784713722:component/ufs-spack/2.0.0/1
   UpdateOsPackages:
     Enabled: true
