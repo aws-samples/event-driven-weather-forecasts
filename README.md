@@ -53,11 +53,13 @@ cd resources
 cd ..
 ```
 
-Then deploy the CDK stack.
+Then deploy the CDK stack. Note: you must specify a bucket where you want the
+forecast output uploaded to, in the following example I am using
+`my-bucket-name`.
 
 ```
 cdk bootstrap
-cdk deploy --parameters BucketName=aws-weather-bucket
+cdk deploy --parameters BucketName=my-bucket-name
 ```
 
 ## Cleanup
@@ -115,10 +117,8 @@ The forecast job submission functions are within the `lambda/forecast.py` file.
 The S3 bucket contains all the run directory, outputs, and templates used. The top-level bucket structure is as follows:
 
 ```
-└── aws-weather-bucket
-    ├── outputs
-    ├── run
-    └── templates
+└──my-bucket-name
+    └── outputs
 ```
 
 The `outputs` directory contain prefixes related to the forecast valid time (`%Y/%m/%d/%H`).
@@ -143,15 +143,20 @@ We are going to create a custom ParallelCluster EC2. In doing so we will install
 * [Unified Post Processor](https://dtcenter.org/community-code/unified-post-processor-upp)
 
 A custom component to install these packages exists in `src/resources/ufs-spack-component.yaml`.
-This needs to be deployed to our bucket.
+This needs to be deployed to a bucket, that exists. Which means we need to
+create it before creating the image and before deploying the stack. In this
+example, we are calling our bucket `my-templates-bucket`.
+
 ```
-aws s3 cp src/resources/ufs-spack-component.yaml s3://aws-weather-bucket/templates/
+aws s3api create-bucket --acl private --bucket my-templates-bucket --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2
+sed -i 's/aws-weather-bucket/my-templates-bucket/' src/resources/ufs-spack-component.yaml
+aws s3 cp src/resources/ufs-spack-component.yaml s3://my-templates-bucket/templates/
 ```
 Once deployed we need to register it with EC2 ImageBuilder.
 ```
 aws imagebuilder create-component --name ufs-spack --semantic-version "1.0.0" \
     --change-description "Inital version" --platform "Linux" \
-    --uri "s3://aws-weather-bucket/templates/ufs-spack-component.yaml"
+    --uri "s3://my-templates-bucket/templates/ufs-spack-component.yaml"
 ```
 
 Build the new image
