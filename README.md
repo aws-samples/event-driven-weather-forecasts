@@ -43,6 +43,7 @@ Create a lambda layer that contains `requests` and `pyyaml`.
 mkdir layer && cd $_
 pip install requests pyyaml -t python/
 zip -r ../layer.zip python
+cd ..
 ```
 
 Download the fix/static files from NOAA. Note, this will take awhile as it
