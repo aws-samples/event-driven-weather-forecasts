@@ -146,11 +146,13 @@ We are going to create a custom ParallelCluster EC2. In doing so we will install
 A custom component to install these packages exists in `src/resources/ufs-spack-component.yaml`.
 This needs to be deployed to a bucket, that exists. Which means we need to
 create it before creating the image and before deploying the stack. In this
-example, we are calling our bucket `my-templates-bucket`.
+example, we are calling our bucket `my-templates-bucket` and our account
+number is `987654321`.
 
 ```
 aws s3api create-bucket --acl private --bucket my-templates-bucket --region us-east-2 --create-bucket-configuration LocationConstraint=us-east-2
 sed -i 's/aws-weather-bucket/my-templates-bucket/' src/resources/ufs-spack-component.yaml
+sed -i 's/123456789/987654321/' src/resources/ufs-image-config.yaml
 aws s3 cp src/resources/ufs-spack-component.yaml s3://my-templates-bucket/templates/
 ```
 Once deployed we need to register it with EC2 ImageBuilder.
